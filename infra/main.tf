@@ -78,9 +78,15 @@ resource "aws_iam_role_policy" "agentcore_permissions" {
         Action = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"]
         # compact() descarta el ARN del modelo propio mientras esté vacío
         # (antes del CMI); un "" en Resource invalida el documento de política.
+        # El fallback Llama 3.1 8B se invoca por inference profile (us.*), que
+        # enruta entre us-east-1/us-east-2/us-west-2: hay que permitir el ARN
+        # del profile y los foundation-model de esas tres regiones.
         Resource = compact([
           var.aiveridia_events_model_arn,
-          "arn:aws:bedrock:us-east-1::foundation-model/*"
+          "arn:aws:bedrock:us-east-1::foundation-model/*",
+          "arn:aws:bedrock:us-east-2::foundation-model/*",
+          "arn:aws:bedrock:us-west-2::foundation-model/*",
+          "arn:aws:bedrock:us-east-1:${data.aws_caller_identity.me.account_id}:inference-profile/*"
         ])
       },
       {

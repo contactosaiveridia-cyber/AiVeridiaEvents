@@ -23,7 +23,10 @@ from core.config import settings
 
 Task = Literal["conversacion", "extraccion", "razonamiento"]
 
-BEDROCK_BASE_FALLBACK = "meta.llama3-1-8b-instruct-v1:0"
+# Llama 3.1 8B en Bedrock ya no admite on-demand por model-id directo: hay que
+# invocarlo por su inference profile (prefijo de región "us."). El profile
+# enruta entre us-east-1/us-east-2/us-west-2 (ver política IAM en infra/main.tf).
+BEDROCK_BASE_FALLBACK = "us.meta.llama3-1-8b-instruct-v1:0"
 OLLAMA_FALLBACKS = ("llama3.1:8b", "llama3.2", "llama3")
 
 
