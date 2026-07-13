@@ -24,6 +24,8 @@ infra/.terraform/
 infra/*.tfstate
 infra/*.tfstate.backup
 infra/.terraform.lock.hcl
+infra/tfplan
+infra/build/
 
 # ML artifacts
 ml/checkpoints/

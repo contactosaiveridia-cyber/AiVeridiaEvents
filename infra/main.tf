@@ -76,10 +76,12 @@ resource "aws_iam_role_policy" "agentcore_permissions" {
         Sid    = "InvokeAiVeridiaEventsYFallbacks"
         Effect = "Allow"
         Action = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"]
-        Resource = [
+        # compact() descarta el ARN del modelo propio mientras esté vacío
+        # (antes del CMI); un "" en Resource invalida el documento de política.
+        Resource = compact([
           var.aiveridia_events_model_arn,
           "arn:aws:bedrock:us-east-1::foundation-model/*"
-        ]
+        ])
       },
       {
         Sid      = "LeerSecretos"
