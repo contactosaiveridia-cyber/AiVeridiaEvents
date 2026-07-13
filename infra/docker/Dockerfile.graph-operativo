@@ -1,0 +1,13 @@
+# Bedrock AgentCore Runtime — grafo operativo (P2).
+#   docker buildx build --platform linux/arm64 \
+#     -f infra/docker/Dockerfile.graph-operativo -t graph-operativo apps/agents
+FROM --platform=linux/arm64 python:3.12-slim
+
+WORKDIR /app
+COPY pyproject.toml ./
+COPY src ./src
+RUN pip install --no-cache-dir -e .[cloud] bedrock-agentcore
+
+ENV AIV_ENV=prod AIV_TIMERS=eventbridge
+EXPOSE 8080
+CMD ["python", "src/agentcore/app_operativo.py"]

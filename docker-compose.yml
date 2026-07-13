@@ -1,0 +1,56 @@
+name: aiveridia-events
+
+services:
+  db:
+    # pgvector-enabled Postgres for dev. In cloud the data layer is Supabase
+    # (same migrations via `supabase db push`); the auth compat shim in
+    # db/migrations makes both environments interchangeable.
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aiveridia
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./db:/db:ro
+      - ./db/init/00-init.sh:/docker-entrypoint-initdb.d/00-init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aiveridia"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    # Pull dev models on first run:
+    #   docker compose exec ollama ollama pull llama3.1:8b
+    #   docker compose exec ollama ollama pull nomic-embed-text
+
+  agents:
+    build: ./apps/agents
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      AIV_ENV: dev
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/aiveridia
+      OLLAMA_BASE_URL: http://ollama:11434
+      AIV_UMBRAL_DESCUENTO: "10"
+      AIV_TIMERS: apscheduler          # mock local de EventBridge Scheduler
+      AIV_DEDUP: postgres
+      AIV_INTERNAL_TOKEN: dev-internal-token
+    ports:
+      - "8000:8000"
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./apps/agents/src:/app/src
+
+volumes:
+  dbdata:
+  ollama:

@@ -1,0 +1,13 @@
+{
+  "name": "aiveridia-db-verify",
+  "private": true,
+  "type": "module",
+  "description": "Verifica migraciones, seed, RLS y anti doble-reserva contra Postgres embebido (sin Docker)",
+  "scripts": {
+    "verify": "node verify_db.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.4",
+    "@electric-sql/pglite-pgvector": "^0.0.5"
+  }
+}

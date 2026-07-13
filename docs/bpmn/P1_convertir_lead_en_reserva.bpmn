@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_P1"
+                  targetNamespace="http://aiveridia.com/bpmn/eventos">
+
+  <bpmn:collaboration id="Collab_P1">
+    <bpmn:participant id="Participant_Cliente" name="Cliente (lead)" />
+    <bpmn:participant id="Participant_Plataforma" name="Plataforma aiVeridia Eventos (AaaS)" processRef="Process_Comercial" />
+    <bpmn:messageFlow id="MF1" name="Mensaje inicial" sourceRef="Participant_Cliente" targetRef="StartEvent_Lead" />
+    <bpmn:messageFlow id="MF2" name="Fechas alternativas" sourceRef="Task_Alternativas" targetRef="Participant_Cliente" />
+    <bpmn:messageFlow id="MF3" name="Elección de fecha" sourceRef="Participant_Cliente" targetRef="Evt_Eleccion" />
+    <bpmn:messageFlow id="MF4" name="Cotización" sourceRef="Task_EnviarCotizacion" targetRef="Participant_Cliente" />
+    <bpmn:messageFlow id="MF5" name="Aceptación" sourceRef="Participant_Cliente" targetRef="Evt_Acepta1" />
+    <bpmn:messageFlow id="MF6" name="Seguimiento" sourceRef="Task_Recordatorio" targetRef="Participant_Cliente" />
+    <bpmn:messageFlow id="MF7" name="Aceptación" sourceRef="Participant_Cliente" targetRef="Evt_Acepta2" />
+    <bpmn:messageFlow id="MF8" name="Link de pago" sourceRef="Task_LinkPago" targetRef="Participant_Cliente" />
+    <bpmn:messageFlow id="MF9" name="Pago" sourceRef="Participant_Cliente" targetRef="Evt_Pago" />
+    <bpmn:messageFlow id="MF10" name="Recordatorio de pago" sourceRef="Task_RecordarPago" targetRef="Participant_Cliente" />
+    <bpmn:messageFlow id="MF11" name="Pago" sourceRef="Participant_Cliente" targetRef="Evt_Pago2" />
+    <bpmn:messageFlow id="MF12" name="Contrato y confirmación" sourceRef="Task_EnviarConf" targetRef="Participant_Cliente" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Comercial" name="Convertir lead en reserva confirmada" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_P1">
+      <bpmn:lane id="Lane_A1" name="A1 — Agente Conversacional de Ventas">
+        <bpmn:flowNodeRef>StartEvent_Lead</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Calificar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Disponibilidad</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_Disponible</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Alternativas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_Eleccion</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_A2" name="A2 — Agente de Cotización Dinámica">
+        <bpmn:flowNodeRef>Task_Cotizar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_Descuento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AprobarDescuento</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_MergeDesc</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_EnviarCotizacion</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_A3" name="A3 — Agente de Seguimiento">
+        <bpmn:flowNodeRef>GW_Espera1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_Acepta1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_Timer48</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Recordatorio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_Espera2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_Acepta2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_Timer7d</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Nurturing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_NoConvertido</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_A4" name="A4 — Agente de Reservas y Pagos">
+        <bpmn:flowNodeRef>GW_MergeAcepta</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_LinkPago</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_EsperaPago</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_Pago</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_TimerPago</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RecordarPago</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_EsperaPago2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_Pago2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Evt_TimerPago2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Liberar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Cancelada</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_MergePago</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Registrar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Contrato</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_EnviarConf</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Confirmada</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Lead" name="Lead recibido por WhatsApp / redes">
+      <bpmn:outgoing>F1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Start" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Calificar" name="Calificar lead (fecha, aforo, tipo, presupuesto)">
+      <bpmn:incoming>F1</bpmn:incoming>
+      <bpmn:outgoing>F2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Disponibilidad" name="Consultar disponibilidad en calendario">
+      <bpmn:incoming>F2</bpmn:incoming>
+      <bpmn:incoming>F6</bpmn:incoming>
+      <bpmn:outgoing>F3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="GW_Disponible" name="¿Fecha disponible?">
+      <bpmn:incoming>F3</bpmn:incoming>
+      <bpmn:outgoing>F4</bpmn:outgoing>
+      <bpmn:outgoing>F7</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sendTask id="Task_Alternativas" name="Proponer fechas alternativas">
+      <bpmn:incoming>F4</bpmn:incoming>
+      <bpmn:outgoing>F5</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="Evt_Eleccion" name="Recibir elección del cliente">
+      <bpmn:incoming>F5</bpmn:incoming>
+      <bpmn:outgoing>F6</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Eleccion" />
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:businessRuleTask id="Task_Cotizar" name="Generar cotización dinámica (paquete, temporada, aforo)">
+      <bpmn:incoming>F7</bpmn:incoming>
+      <bpmn:outgoing>F8</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:exclusiveGateway id="GW_Descuento" name="¿Descuento &gt; umbral?">
+      <bpmn:incoming>F8</bpmn:incoming>
+      <bpmn:outgoing>F9</bpmn:outgoing>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_AprobarDescuento" name="Aprobar descuento (dueño del salón)">
+      <bpmn:incoming>F9</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_MergeDesc">
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sendTask id="Task_EnviarCotizacion" name="Enviar cotización con paquetes y fotos">
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:eventBasedGateway id="GW_Espera1">
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+      <bpmn:outgoing>F15</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Evt_Acepta1" name="Cliente acepta">
+      <bpmn:incoming>F14</bpmn:incoming>
+      <bpmn:outgoing>F22</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Acepta1" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Evt_Timer48" name="48 h sin respuesta">
+      <bpmn:incoming>F15</bpmn:incoming>
+      <bpmn:outgoing>F16</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_48h">
+        <bpmn:timeDuration>PT48H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sendTask id="Task_Recordatorio" name="Enviar seguimiento personalizado">
+      <bpmn:incoming>F16</bpmn:incoming>
+      <bpmn:outgoing>F17</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:eventBasedGateway id="GW_Espera2">
+      <bpmn:incoming>F17</bpmn:incoming>
+      <bpmn:outgoing>F18</bpmn:outgoing>
+      <bpmn:outgoing>F19</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Evt_Acepta2" name="Cliente acepta">
+      <bpmn:incoming>F18</bpmn:incoming>
+      <bpmn:outgoing>F23</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Acepta2" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Evt_Timer7d" name="7 días sin respuesta">
+      <bpmn:incoming>F19</bpmn:incoming>
+      <bpmn:outgoing>F20</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_7d">
+        <bpmn:timeDuration>P7D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Task_Nurturing" name="Registrar lead para nurturing de largo plazo">
+      <bpmn:incoming>F20</bpmn:incoming>
+      <bpmn:outgoing>F21</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_NoConvertido" name="Lead no convertido">
+      <bpmn:incoming>F21</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:exclusiveGateway id="GW_MergeAcepta">
+      <bpmn:incoming>F22</bpmn:incoming>
+      <bpmn:incoming>F23</bpmn:incoming>
+      <bpmn:outgoing>F24</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sendTask id="Task_LinkPago" name="Enviar link de pago de separación">
+      <bpmn:incoming>F24</bpmn:incoming>
+      <bpmn:outgoing>F25</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:eventBasedGateway id="GW_EsperaPago">
+      <bpmn:incoming>F25</bpmn:incoming>
+      <bpmn:outgoing>F26</bpmn:outgoing>
+      <bpmn:outgoing>F27</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Evt_Pago" name="Pago de separación recibido">
+      <bpmn:incoming>F26</bpmn:incoming>
+      <bpmn:outgoing>F34</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Pago1" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Evt_TimerPago" name="24 h sin pago">
+      <bpmn:incoming>F27</bpmn:incoming>
+      <bpmn:outgoing>F28</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_24h">
+        <bpmn:timeDuration>PT24H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sendTask id="Task_RecordarPago" name="Recordar pago pendiente">
+      <bpmn:incoming>F28</bpmn:incoming>
+      <bpmn:outgoing>F29</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:eventBasedGateway id="GW_EsperaPago2">
+      <bpmn:incoming>F29</bpmn:incoming>
+      <bpmn:outgoing>F30</bpmn:outgoing>
+      <bpmn:outgoing>F31</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Evt_Pago2" name="Pago recibido">
+      <bpmn:incoming>F30</bpmn:incoming>
+      <bpmn:outgoing>F35</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Pago2" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Evt_TimerPago2" name="48 h sin pago">
+      <bpmn:incoming>F31</bpmn:incoming>
+      <bpmn:outgoing>F32</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_48hPago">
+        <bpmn:timeDuration>PT48H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Task_Liberar" name="Liberar fecha reservada">
+      <bpmn:incoming>F32</bpmn:incoming>
+      <bpmn:outgoing>F33</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_Cancelada" name="Reserva cancelada por no pago">
+      <bpmn:incoming>F33</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="GW_MergePago">
+      <bpmn:incoming>F34</bpmn:incoming>
+      <bpmn:incoming>F35</bpmn:incoming>
+      <bpmn:outgoing>F36</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_Registrar" name="Registrar reserva y bloquear fecha">
+      <bpmn:incoming>F36</bpmn:incoming>
+      <bpmn:outgoing>F37</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Contrato" name="Generar contrato digital">
+      <bpmn:incoming>F37</bpmn:incoming>
+      <bpmn:outgoing>F38</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Task_EnviarConf" name="Enviar contrato y confirmación">
+      <bpmn:incoming>F38</bpmn:incoming>
+      <bpmn:outgoing>F39</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_Confirmada" name="Reserva confirmada — dispara proceso operativo">
+      <bpmn:incoming>F39</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MsgDef_EndConf" />
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="F1" sourceRef="StartEvent_Lead" targetRef="Task_Calificar" />
+    <bpmn:sequenceFlow id="F2" sourceRef="Task_Calificar" targetRef="Task_Disponibilidad" />
+    <bpmn:sequenceFlow id="F3" sourceRef="Task_Disponibilidad" targetRef="GW_Disponible" />
+    <bpmn:sequenceFlow id="F4" name="No" sourceRef="GW_Disponible" targetRef="Task_Alternativas" />
+    <bpmn:sequenceFlow id="F5" sourceRef="Task_Alternativas" targetRef="Evt_Eleccion" />
+    <bpmn:sequenceFlow id="F6" sourceRef="Evt_Eleccion" targetRef="Task_Disponibilidad" />
+    <bpmn:sequenceFlow id="F7" name="Sí" sourceRef="GW_Disponible" targetRef="Task_Cotizar" />
+    <bpmn:sequenceFlow id="F8" sourceRef="Task_Cotizar" targetRef="GW_Descuento" />
+    <bpmn:sequenceFlow id="F9" name="Sí" sourceRef="GW_Descuento" targetRef="Task_AprobarDescuento" />
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_AprobarDescuento" targetRef="GW_MergeDesc" />
+    <bpmn:sequenceFlow id="F11" name="No" sourceRef="GW_Descuento" targetRef="GW_MergeDesc" />
+    <bpmn:sequenceFlow id="F12" sourceRef="GW_MergeDesc" targetRef="Task_EnviarCotizacion" />
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_EnviarCotizacion" targetRef="GW_Espera1" />
+    <bpmn:sequenceFlow id="F14" sourceRef="GW_Espera1" targetRef="Evt_Acepta1" />
+    <bpmn:sequenceFlow id="F15" sourceRef="GW_Espera1" targetRef="Evt_Timer48" />
+    <bpmn:sequenceFlow id="F16" sourceRef="Evt_Timer48" targetRef="Task_Recordatorio" />
+    <bpmn:sequenceFlow id="F17" sourceRef="Task_Recordatorio" targetRef="GW_Espera2" />
+    <bpmn:sequenceFlow id="F18" sourceRef="GW_Espera2" targetRef="Evt_Acepta2" />
+    <bpmn:sequenceFlow id="F19" sourceRef="GW_Espera2" targetRef="Evt_Timer7d" />
+    <bpmn:sequenceFlow id="F20" sourceRef="Evt_Timer7d" targetRef="Task_Nurturing" />
+    <bpmn:sequenceFlow id="F21" sourceRef="Task_Nurturing" targetRef="End_NoConvertido" />
+    <bpmn:sequenceFlow id="F22" sourceRef="Evt_Acepta1" targetRef="GW_MergeAcepta" />
+    <bpmn:sequenceFlow id="F23" sourceRef="Evt_Acepta2" targetRef="GW_MergeAcepta" />
+    <bpmn:sequenceFlow id="F24" sourceRef="GW_MergeAcepta" targetRef="Task_LinkPago" />
+    <bpmn:sequenceFlow id="F25" sourceRef="Task_LinkPago" targetRef="GW_EsperaPago" />
+    <bpmn:sequenceFlow id="F26" sourceRef="GW_EsperaPago" targetRef="Evt_Pago" />
+    <bpmn:sequenceFlow id="F27" sourceRef="GW_EsperaPago" targetRef="Evt_TimerPago" />
+    <bpmn:sequenceFlow id="F28" sourceRef="Evt_TimerPago" targetRef="Task_RecordarPago" />
+    <bpmn:sequenceFlow id="F29" sourceRef="Task_RecordarPago" targetRef="GW_EsperaPago2" />
+    <bpmn:sequenceFlow id="F30" sourceRef="GW_EsperaPago2" targetRef="Evt_Pago2" />
+    <bpmn:sequenceFlow id="F31" sourceRef="GW_EsperaPago2" targetRef="Evt_TimerPago2" />
+    <bpmn:sequenceFlow id="F32" sourceRef="Evt_TimerPago2" targetRef="Task_Liberar" />
+    <bpmn:sequenceFlow id="F33" sourceRef="Task_Liberar" targetRef="End_Cancelada" />
+    <bpmn:sequenceFlow id="F34" sourceRef="Evt_Pago" targetRef="GW_MergePago" />
+    <bpmn:sequenceFlow id="F35" sourceRef="Evt_Pago2" targetRef="GW_MergePago" />
+    <bpmn:sequenceFlow id="F36" sourceRef="GW_MergePago" targetRef="Task_Registrar" />
+    <bpmn:sequenceFlow id="F37" sourceRef="Task_Registrar" targetRef="Task_Contrato" />
+    <bpmn:sequenceFlow id="F38" sourceRef="Task_Contrato" targetRef="Task_EnviarConf" />
+    <bpmn:sequenceFlow id="F39" sourceRef="Task_EnviarConf" targetRef="End_Confirmada" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_P1">
+    <bpmndi:BPMNPlane id="BPMNPlane_P1" bpmnElement="Collab_P1">
+
+      <bpmndi:BPMNShape id="Participant_Cliente_di" bpmnElement="Participant_Cliente" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="2740" height="100" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Plataforma_di" bpmnElement="Participant_Plataforma" isHorizontal="true">
+        <dc:Bounds x="160" y="220" width="2740" height="920" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_A1_di" bpmnElement="Lane_A1" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="2710" height="240" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_A2_di" bpmnElement="Lane_A2" isHorizontal="true">
+        <dc:Bounds x="190" y="460" width="2710" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_A3_di" bpmnElement="Lane_A3" isHorizontal="true">
+        <dc:Bounds x="190" y="680" width="2710" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_A4_di" bpmnElement="Lane_A4" isHorizontal="true">
+        <dc:Bounds x="190" y="900" width="2710" height="240" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="StartEvent_Lead_di" bpmnElement="StartEvent_Lead">
+        <dc:Bounds x="240" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="210" y="335" width="96" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Calificar_di" bpmnElement="Task_Calificar">
+        <dc:Bounds x="320" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Disponibilidad_di" bpmnElement="Task_Disponibilidad">
+        <dc:Bounds x="480" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Disponible_di" bpmnElement="GW_Disponible" isMarkerVisible="true">
+        <dc:Bounds x="640" y="285" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="620" y="255" width="90" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Alternativas_di" bpmnElement="Task_Alternativas">
+        <dc:Bounds x="615" y="360" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_Eleccion_di" bpmnElement="Evt_Eleccion">
+        <dc:Bounds x="497" y="382" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="470" y="425" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Cotizar_di" bpmnElement="Task_Cotizar">
+        <dc:Bounds x="740" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Descuento_di" bpmnElement="GW_Descuento" isMarkerVisible="true">
+        <dc:Bounds x="900" y="515" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="880" y="485" width="90" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AprobarDescuento_di" bpmnElement="Task_AprobarDescuento">
+        <dc:Bounds x="1000" y="590" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_MergeDesc_di" bpmnElement="GW_MergeDesc" isMarkerVisible="true">
+        <dc:Bounds x="1160" y="515" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EnviarCotizacion_di" bpmnElement="Task_EnviarCotizacion">
+        <dc:Bounds x="1260" y="500" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="GW_Espera1_di" bpmnElement="GW_Espera1">
+        <dc:Bounds x="1285" y="735" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_Acepta1_di" bpmnElement="Evt_Acepta1">
+        <dc:Bounds x="1432" y="742" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1415" y="712" width="70" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_Timer48_di" bpmnElement="Evt_Timer48">
+        <dc:Bounds x="1292" y="832" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1240" y="875" width="90" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Recordatorio_di" bpmnElement="Task_Recordatorio">
+        <dc:Bounds x="1390" y="810" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Espera2_di" bpmnElement="GW_Espera2">
+        <dc:Bounds x="1560" y="825" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_Acepta2_di" bpmnElement="Evt_Acepta2">
+        <dc:Bounds x="1667" y="742" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1650" y="712" width="70" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_Timer7d_di" bpmnElement="Evt_Timer7d">
+        <dc:Bounds x="1667" y="832" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1635" y="875" width="100" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Nurturing_di" bpmnElement="Task_Nurturing">
+        <dc:Bounds x="1770" y="810" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_NoConvertido_di" bpmnElement="End_NoConvertido">
+        <dc:Bounds x="1930" y="832" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1900" y="875" width="96" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="GW_MergeAcepta_di" bpmnElement="GW_MergeAcepta" isMarkerVisible="true">
+        <dc:Bounds x="1460" y="955" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_LinkPago_di" bpmnElement="Task_LinkPago">
+        <dc:Bounds x="1560" y="940" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_EsperaPago_di" bpmnElement="GW_EsperaPago">
+        <dc:Bounds x="1720" y="955" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_Pago_di" bpmnElement="Evt_Pago">
+        <dc:Bounds x="1827" y="962" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1795" y="1002" width="100" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_TimerPago_di" bpmnElement="Evt_TimerPago">
+        <dc:Bounds x="1727" y="1062" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1690" y="1105" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RecordarPago_di" bpmnElement="Task_RecordarPago">
+        <dc:Bounds x="1810" y="1040" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_EsperaPago2_di" bpmnElement="GW_EsperaPago2">
+        <dc:Bounds x="1980" y="1055" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_Pago2_di" bpmnElement="Evt_Pago2">
+        <dc:Bounds x="2087" y="962" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2070" y="932" width="70" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Evt_TimerPago2_di" bpmnElement="Evt_TimerPago2">
+        <dc:Bounds x="2087" y="1062" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2050" y="1105" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Liberar_di" bpmnElement="Task_Liberar">
+        <dc:Bounds x="2190" y="1040" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Cancelada_di" bpmnElement="End_Cancelada">
+        <dc:Bounds x="2350" y="1062" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2318" y="1105" width="100" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_MergePago_di" bpmnElement="GW_MergePago" isMarkerVisible="true">
+        <dc:Bounds x="2180" y="955" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Registrar_di" bpmnElement="Task_Registrar">
+        <dc:Bounds x="2280" y="940" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Contrato_di" bpmnElement="Task_Contrato">
+        <dc:Bounds x="2440" y="940" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EnviarConf_di" bpmnElement="Task_EnviarConf">
+        <dc:Bounds x="2600" y="940" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Confirmada_di" bpmnElement="End_Confirmada">
+        <dc:Bounds x="2760" y="962" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2720" y="1002" width="116" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="F1_di" bpmnElement="F1">
+        <di:waypoint x="276" y="310" /><di:waypoint x="320" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_di" bpmnElement="F2">
+        <di:waypoint x="420" y="310" /><di:waypoint x="480" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_di" bpmnElement="F3">
+        <di:waypoint x="580" y="310" /><di:waypoint x="640" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_di" bpmnElement="F4">
+        <di:waypoint x="665" y="335" /><di:waypoint x="665" y="360" />
+        <bpmndi:BPMNLabel><dc:Bounds x="672" y="340" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_di" bpmnElement="F5">
+        <di:waypoint x="615" y="400" /><di:waypoint x="533" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F6_di" bpmnElement="F6">
+        <di:waypoint x="497" y="400" /><di:waypoint x="455" y="400" /><di:waypoint x="455" y="310" /><di:waypoint x="480" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F7_di" bpmnElement="F7">
+        <di:waypoint x="690" y="310" /><di:waypoint x="790" y="310" /><di:waypoint x="790" y="500" />
+        <bpmndi:BPMNLabel><dc:Bounds x="700" y="290" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F8_di" bpmnElement="F8">
+        <di:waypoint x="840" y="540" /><di:waypoint x="900" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F9_di" bpmnElement="F9">
+        <di:waypoint x="925" y="565" /><di:waypoint x="925" y="630" /><di:waypoint x="1000" y="630" />
+        <bpmndi:BPMNLabel><dc:Bounds x="932" y="575" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="1100" y="630" /><di:waypoint x="1185" y="630" /><di:waypoint x="1185" y="565" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
+        <di:waypoint x="950" y="540" /><di:waypoint x="1160" y="540" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1040" y="520" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
+        <di:waypoint x="1210" y="540" /><di:waypoint x="1260" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
+        <di:waypoint x="1310" y="580" /><di:waypoint x="1310" y="735" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
+        <di:waypoint x="1335" y="760" /><di:waypoint x="1432" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15">
+        <di:waypoint x="1310" y="785" /><di:waypoint x="1310" y="832" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16">
+        <di:waypoint x="1328" y="850" /><di:waypoint x="1390" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F17_di" bpmnElement="F17">
+        <di:waypoint x="1490" y="850" /><di:waypoint x="1560" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F18_di" bpmnElement="F18">
+        <di:waypoint x="1585" y="825" /><di:waypoint x="1585" y="760" /><di:waypoint x="1667" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F19_di" bpmnElement="F19">
+        <di:waypoint x="1610" y="850" /><di:waypoint x="1667" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F20_di" bpmnElement="F20">
+        <di:waypoint x="1703" y="850" /><di:waypoint x="1770" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F21_di" bpmnElement="F21">
+        <di:waypoint x="1870" y="850" /><di:waypoint x="1930" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F22_di" bpmnElement="F22">
+        <di:waypoint x="1450" y="778" /><di:waypoint x="1450" y="980" /><di:waypoint x="1460" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F23_di" bpmnElement="F23">
+        <di:waypoint x="1685" y="778" /><di:waypoint x="1685" y="930" /><di:waypoint x="1485" y="930" /><di:waypoint x="1485" y="955" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F24_di" bpmnElement="F24">
+        <di:waypoint x="1510" y="980" /><di:waypoint x="1560" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F25_di" bpmnElement="F25">
+        <di:waypoint x="1660" y="980" /><di:waypoint x="1720" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F26_di" bpmnElement="F26">
+        <di:waypoint x="1770" y="980" /><di:waypoint x="1827" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F27_di" bpmnElement="F27">
+        <di:waypoint x="1745" y="1005" /><di:waypoint x="1745" y="1062" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F28_di" bpmnElement="F28">
+        <di:waypoint x="1763" y="1080" /><di:waypoint x="1810" y="1080" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F29_di" bpmnElement="F29">
+        <di:waypoint x="1910" y="1080" /><di:waypoint x="1980" y="1080" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F30_di" bpmnElement="F30">
+        <di:waypoint x="2005" y="1055" /><di:waypoint x="2005" y="980" /><di:waypoint x="2087" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F31_di" bpmnElement="F31">
+        <di:waypoint x="2030" y="1080" /><di:waypoint x="2087" y="1080" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F32_di" bpmnElement="F32">
+        <di:waypoint x="2123" y="1080" /><di:waypoint x="2190" y="1080" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F33_di" bpmnElement="F33">
+        <di:waypoint x="2290" y="1080" /><di:waypoint x="2350" y="1080" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F34_di" bpmnElement="F34">
+        <di:waypoint x="1863" y="980" /><di:waypoint x="1900" y="980" /><di:waypoint x="1900" y="930" /><di:waypoint x="2205" y="930" /><di:waypoint x="2205" y="955" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F35_di" bpmnElement="F35">
+        <di:waypoint x="2123" y="980" /><di:waypoint x="2180" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F36_di" bpmnElement="F36">
+        <di:waypoint x="2230" y="980" /><di:waypoint x="2280" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F37_di" bpmnElement="F37">
+        <di:waypoint x="2380" y="980" /><di:waypoint x="2440" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F38_di" bpmnElement="F38">
+        <di:waypoint x="2540" y="980" /><di:waypoint x="2600" y="980" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F39_di" bpmnElement="F39">
+        <di:waypoint x="2700" y="980" /><di:waypoint x="2760" y="980" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="MF1_di" bpmnElement="MF1">
+        <di:waypoint x="258" y="180" /><di:waypoint x="258" y="292" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF2_di" bpmnElement="MF2">
+        <di:waypoint x="665" y="360" /><di:waypoint x="665" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF3_di" bpmnElement="MF3">
+        <di:waypoint x="515" y="180" /><di:waypoint x="515" y="382" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF4_di" bpmnElement="MF4">
+        <di:waypoint x="1310" y="500" /><di:waypoint x="1310" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF5_di" bpmnElement="MF5">
+        <di:waypoint x="1450" y="180" /><di:waypoint x="1450" y="742" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF6_di" bpmnElement="MF6">
+        <di:waypoint x="1415" y="810" /><di:waypoint x="1415" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF7_di" bpmnElement="MF7">
+        <di:waypoint x="1685" y="180" /><di:waypoint x="1685" y="742" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF8_di" bpmnElement="MF8">
+        <di:waypoint x="1610" y="940" /><di:waypoint x="1610" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF9_di" bpmnElement="MF9">
+        <di:waypoint x="1845" y="180" /><di:waypoint x="1845" y="962" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF10_di" bpmnElement="MF10">
+        <di:waypoint x="1880" y="1040" /><di:waypoint x="1880" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF11_di" bpmnElement="MF11">
+        <di:waypoint x="2105" y="180" /><di:waypoint x="2105" y="962" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF12_di" bpmnElement="MF12">
+        <di:waypoint x="2650" y="940" /><di:waypoint x="2650" y="180" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

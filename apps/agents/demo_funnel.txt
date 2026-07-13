@@ -1,0 +1,11 @@
+# Demo no interactiva del funnel P1 (usar: python -m cli.simulador --script demo_funnel.txt)
+hola! quiero hacer una fiestita para mi hijita
+es un cumpleaños infantil, la fecha es 2026-08-15 y vendrían 40 niños
+te confirmo los datos: tipo de evento cumpleaños, fecha 2026-08-15, 40 invitados
+/descuento 15
+amiga y no me puedes hacer un descuentito del 15%? porfa
+/aprobar si
+/acepta
+/pago
+/estado
+/salir
