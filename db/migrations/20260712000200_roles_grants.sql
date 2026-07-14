@@ -12,6 +12,28 @@ begin
 end
 $$;
 
+-- El runtime conecta con el rol de login del entorno (en Supabase, 'postgres',
+-- que NO es superusuario) y hace `SET LOCAL ROLE aiv_agent` por transacción.
+-- El grant implícito al creador (PG16+) no incluye la opción SET, así que se
+-- concede la membresía explícitamente con SET para permitir el cambio de rol.
+grant aiv_agent to current_user with set true;
+
+-- Rol de login dedicado del runtime en Postgres gestionado (Supabase): la app
+-- NO debe conectar como el privilegiado 'postgres' (que tiene BYPASSRLS y
+-- saltaría el aislamiento por tenant). aiv_runtime es NOBYPASSRLS y miembro de
+-- aiv_agent con opción SET. Su contraseña se fija fuera de la migración
+--   alter role aiv_runtime password '...';
+-- y va en el secreto como DATABASE_URL_RUNTIME. En dev (database_url_runtime
+-- vacío) no se usa: la app conecta como 'postgres' superusuario.
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'aiv_runtime') then
+        create role aiv_runtime login nobypassrls;
+    end if;
+end
+$$;
+grant aiv_agent to aiv_runtime with set true;
+
 grant usage on schema public to aiv_agent;
 
 -- current_tenant() (SECURITY INVOKER) references auth.uid(): the agent role

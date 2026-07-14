@@ -21,20 +21,28 @@ from psycopg.rows import dict_row
 from core.config import settings
 
 
-@lru_cache(maxsize=1)
-def _pool():
+def _make_pool(url: str):
     from psycopg_pool import ConnectionPool
 
     return ConnectionPool(
-        settings.database_url,
-        min_size=0, max_size=10, timeout=10, open=True,
+        url, min_size=0, max_size=10, timeout=10, open=True,
         kwargs={"row_factory": dict_row},
     )
 
 
+@lru_cache(maxsize=1)
+def _admin_pool():
+    return _make_pool(settings.database_url)
+
+
+@lru_cache(maxsize=1)
+def _runtime_pool():
+    return _make_pool(settings.runtime_url)
+
+
 @contextmanager
 def tenant_connection(tenant_id: str) -> Iterator[psycopg.Connection]:
-    with _pool().connection() as conn:
+    with _runtime_pool().connection() as conn:
         with conn.transaction():
             conn.execute("set local role aiv_agent")
             conn.execute(
@@ -46,5 +54,5 @@ def tenant_connection(tenant_id: str) -> Iterator[psycopg.Connection]:
 @contextmanager
 def admin_connection() -> Iterator[psycopg.Connection]:
     """Unrestricted connection (migrations, seeds, edge dedup, maintenance)."""
-    with _pool().connection() as conn:
+    with _admin_pool().connection() as conn:
         yield conn

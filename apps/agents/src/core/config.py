@@ -3,7 +3,17 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     aiv_env: str = "dev"
+    # Conexión ADMIN (infra: checkpointer, dedup, matview, migraciones). En
+    # Postgres gestionado es un rol privilegiado (Supabase 'postgres').
     database_url: str = "postgresql://postgres:postgres@localhost:5432/aiveridia"
+    # Conexión RUNTIME para consultas de tenant (sujeta a RLS). En prod es un
+    # rol NOBYPASSRLS dedicado (aiv_runtime); vacío en dev => usa database_url
+    # (donde 'postgres' es superusuario y el SET ROLE basta para el aislamiento).
+    database_url_runtime: str = ""
+
+    @property
+    def runtime_url(self) -> str:
+        return self.database_url_runtime or self.database_url
 
     # LLM router
     ollama_base_url: str = "http://localhost:11434"
